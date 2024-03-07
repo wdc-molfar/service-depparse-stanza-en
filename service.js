@@ -2,20 +2,20 @@ const { ServiceWrapper, AmqpManager, Middlewares } = require("@molfar/service-ch
 const { extend } = require("lodash")
 const path = require("path")
 
-
-const NER = require("./src/javascript/bridge")
+const packageConfig = require(path.resolve(__dirname, "./package.json")).depparse
+const DepParse = require("./src/javascript/bridge")
  
 const config = {
      mode: 'text',
      encoding: 'utf8',
      pythonOptions: ['-u'],
-     pythonPath: (process.env.NODE_ENV && process.env.NODE_ENV == "production") ? 'python' : 'python.exe',
-     args: path.resolve(__dirname,"./MITIE-models/model.dat")	
+     pythonPath: (process.env.NODE_ENV && process.env.NODE_ENV === "production") ? "python" : "python.exe",
+     args: `${packageConfig.service.lang} ${path.resolve(__dirname, "./Stanza-models")}`
 }
 
- const extractor = new NER(config)
+const extractor = new DepParse(config)
 
- extractor.start()
+extractor.start()
 
 
 
@@ -54,20 +54,20 @@ let service = new ServiceWrapper({
             },    
 
             Middlewares.Filter( msg =>  {
-                if( msg.content.langDetector.language.locale != "uk") {
+                if( msg.content.langDetector.language.locale !== "uk") {
                     console.log("IGNORE", msg.content.langDetector.language.locale)
                     msg.ack()
                 } else {
                     console.log("ACCEPT", msg.content.langDetector.language.locale)
                 } 
-                return msg.content.langDetector.language.locale == "uk"
+                return msg.content.langDetector.language.locale === "uk"
             }),
 
             async (err, msg, next) => {
                 let m = msg.content
-                let res = await extractor.getNER(m.scraper.message.text)
+                let res = await extractor.getDepParse(m.scraper.message.text)
                 m = extend({}, m, {
-                        ner: res.data.response.named_entities
+                        DepParse: res.data.response.named_entities
                     }
                 )
                 this.publisher.send(m)

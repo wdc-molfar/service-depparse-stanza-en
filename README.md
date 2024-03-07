@@ -1,2 +1,2 @@
-# service-ner-stanza-en
-Stanza Named Entity Recognition for English Language Molfar Service
+# service-depparse-stanza-en
+Stanza Dependency Parser for English Language Molfar Service
