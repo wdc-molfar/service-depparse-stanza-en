@@ -3,6 +3,7 @@
 import io
 import json
 import sys
+import traceback
 
 import stanza
 
@@ -22,21 +23,32 @@ if __name__ == '__main__':
     )
     input_json = None
     for line in input_stream:
-        input_json = json.loads(line)
-        method = input_json['method']
-        text = input_json['params']['text']
-        output = None
-        doc = nlp(text)
-        if method == 'extract_dependencies':
-            output = []
-            for sentence in doc.sentences:
-                for (word1, dep, word2) in sentence.dependencies:
-                    output.append(dict(
-                        word1=word1.lemma,
-                        dep=dep,
-                        word2=word2.lemma
-                    ))
-            output = {"request": input_json, "response": {"dependencies": output}}
+        try:
+            input_json = json.loads(line)
+            method = input_json['method']
+            text = input_json['params']['text']
+            output = None
+            doc = nlp(text)
+            if method == 'extract_dependencies':
+                output = []
+                for sentence in doc.sentences:
+                    for (word1, dep, word2) in sentence.dependencies:
+                        output.append(dict(
+                            word1=word1.lemma,
+                            dep=dep,
+                            word2=word2.lemma
+                        ))
+                output = {"request": input_json, "response": {"dependencies": output}}
+        except BaseException as ex:
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+
+            output = {"error": ''}
+            output['error'] += "Exception type : %s; \n" % ex_type.__name__
+            output['error'] += "Exception message : %s\n" % ex_value
+            output['error'] += "Exception traceback : %s\n" % "".join(
+                traceback.TracebackException.from_exception(ex).format()
+            )
+
         output_json = json.dumps(output, ensure_ascii=False).encode('utf-8')
         sys.stdout.buffer.write(output_json)
         print()
