@@ -32,11 +32,13 @@ if __name__ == '__main__':
             if method == 'extract_dependencies':
                 output = []
                 for sentence in doc.sentences:
-                    for (word1, dep, word2) in sentence.dependencies:
+                    for (source_word, dependency, target_word) in sentence.dependencies:
+                        if dependency == 'root':
+                            continue
                         output.append(dict(
-                            word1=word1.lemma,
-                            dep=dep,
-                            word2=word2.lemma
+                            source=source_word.lemma,
+                            dependency=dependency,
+                            target=target_word.lemma
                         ))
                 output = {"request": input_json, "response": {"dependencies": output}}
         except BaseException as ex:
