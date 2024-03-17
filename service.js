@@ -54,13 +54,13 @@ let service = new ServiceWrapper({
             },    
 
             Middlewares.Filter( msg =>  {
-                if( msg.content.langDetector.language.locale !== "uk") {
+                if( msg.content.langDetector.language.locale !== "en") {
                     console.log("IGNORE", msg.content.langDetector.language.locale)
                     msg.ack()
                 } else {
                     console.log("ACCEPT", msg.content.langDetector.language.locale)
                 } 
-                return msg.content.langDetector.language.locale === "uk"
+                return msg.content.langDetector.language.locale === "en"
             }),
 
             async (err, msg, next) => {
